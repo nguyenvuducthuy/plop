@@ -1,12 +1,14 @@
-compile:
-	@rm -f ./build/*
+rwildcard=$(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
+SOURCE=$(call rwildcard,.,*.c)
 
+compile:
 	@clang \
 		-Ofast -Wall -Wextra --target=wasm32 --no-standard-libraries -Wno-unused-parameter -Wno-switch\
 		-Wl,--no-entry -Wl,--export-dynamic \
 		-o build/sim.wasm \
-		$(shell find ./src/c -name '*.c')
+		$(SOURCE)
 
+js:
 	@uglifyjs \
 		./src/js/ui/primitives/vec2.js \
 		./src/js/ui/primitives/point.js \
@@ -28,3 +30,6 @@ compile:
 		-o ./build/glue.min.js --compress --mangle #--source-map url=glue.min.js.map
 
 	@cp ./src/static/* ./build
+
+clean:
+	@rm -f ./build/*
